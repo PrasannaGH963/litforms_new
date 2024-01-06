@@ -19,6 +19,7 @@ def append_to_google_sheet(name, email):
 st.title("Form to Google Sheet")
 name = st.text_input("Enter your name")
 email = st.text_input("Enter your email")
+uploaded_file = st.file_uploader("Choose a file")
 
 if st.button("Submit"):
     if name and email:
