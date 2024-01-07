@@ -5,17 +5,21 @@ from oauth2client.service_account import ServiceAccountCredentials
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-
+FOLDER_ID="1T3RiNpcYS-vbtSa_AN7z_ZlQbiZtLJfj"
 # Function to write data to Google Sheet
-def append_to_google_sheet(name, email):
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+def append_to_google_sheet(name, email,events,link):
+    scope = ['https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive.metadata'
+  ]
     creds = ServiceAccountCredentials.from_json_keyfile_name("litforms.json", scope)
     client = gspread.authorize(creds)
 
     # Replace 'Sheet Name' with your actual+ sheet name
     sheet = client.open_by_key("1VeWt6NBUGqc_4TldxqFfrw9qWhd_4n_FKM0H0XEvoLw").worksheet("Sheet1")
-    sheet.append_row([name, email])
-    st.success("Data written to Google Sheet successfully!")
+    sheet.append_row([name, email,events,link])
+    st.success("Event Registration completed successfully!")
 
 # Path to your credentials JSON file
 CREDENTIALS_FILE = 'litforms.json'  # Replace with your credentials file path
@@ -29,28 +33,28 @@ def upload_to_drive(file_path, file_name, mime_type,folder_id):
 
     # Authorize the API client
     service = build('drive', 'v3', credentials=creds)
-    try:
-        folder = service.files().get(fileId=folder_id, fields='id, mimeType').execute()
+    # try:
+    # # folder = service.files().get(fileId=folder_id, fields='id, mimeType').execute()
+    # service.files()
+    # if folder.get('mimeType') == 'application/vnd.google-apps.folder':
+    file_metadata = {
+        'name': file_name,  # Use the provided file name for the uploaded file
+        "parents": [folder_id]
 
-        if folder.get('mimeType') == 'application/vnd.google-apps.folder':
-            file_metadata = {
-                'name': file_name,  # Use the provided file name for the uploaded file
-                'parents': [folder_id]
-            }
-            media = MediaFileUpload(file_path, mimetype=mime_type)
+    }
+    media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
 
-            # Upload the file to Drive
-            file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+    # Upload the file to Drive
+    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
-            return file.get('id')
-            # The ID represents a folder
-        else:
-            return False  # The ID does not represent a folder
-    except HttpError as e:
-        if e.resp.status == 404:
-            return False  # Folder not found (or permission issue)
-        else:
-            raise  # Other HTTP error occurred
+    return file.get('id')
+        # The ID represents a folder
+      # The ID does not represent a folder
+    # except HttpError as e:
+    #     if e.resp.status == 404:
+    #         st.write("Error in uploading file1234")  # Folder not found (or permission issue)
+    #     else:
+    #         raise  # Other HTTP error occurred
 
     # Define file metadata and upload
 
@@ -58,29 +62,29 @@ def upload_to_drive(file_path, file_name, mime_type,folder_id):
 
 
 # Streamlit form
-st.title("Form to Google Sheet")
+st.title("ACUNETIX 11.0 Registration")
 name = st.text_input("Enter your name")
 email = st.text_input("Enter your email")
 # uploaded_file = st.file_uploader("Choose a file")
 
 costs = {
-    'Checkbox 1': 10,
-    'Checkbox 2': 20,
-    'Checkbox 3': 30,
-    'Checkbox 4': 40,
-    'Checkbox 5': 50,
-    'Checkbox 6': 60,
-    'Checkbox 7': 70,
-    'Checkbox 8': 80,
-    'Checkbox 9': 90,
-    'Checkbox 10': 100
+    'Innovatia': 10,
+    'DPL': 20,
+    'Code of Lies': 30,
+    'Ctrl-Alt-Elite': 40,
+    'MUN' : 50,
+    'Brainiac': 60,
+    'Gamestorm': 70,
+    'Treasure Trove': 80,
+    'PromptAI': 90,
+    '11hr Hackathon': 100
 }
 
 # Empty dictionary to store the selected checkboxes and their costs
 selected_items = {}
 
 # Display checkboxes and calculate total cost
-st.title("Checkbox Example")
+st.title("Events in ACUNETIX 11.0")
 
 # Iterate through the dictionary to create checkboxes
 for label, cost in costs.items():
@@ -90,7 +94,7 @@ for label, cost in costs.items():
 
 # Calculate total cost based on selected checkboxes
 total_cost = sum(selected_items.values())
-
+events = ",".join(list(selected_items.keys()))
 # Display the total cost
 # st.write(f"Total Cost: {total_cost}")
 redirect_url = f"upi://pay?pa=pranavmehe14@okicici&pn=Pranav&cu=INR&am={total_cost}"
@@ -119,7 +123,7 @@ button_styles = """
 """
 st.components.v1.html(
     button_styles +
-    f'<a href="{redirect_url}" class="custom-link" target="_blank">Click here to visit the example website</a>'
+    f'<a href="{redirect_url}" class="custom-link" target="_blank">Payment</a>'
 )
 
 st.title('File Upload to Google Drive')
@@ -127,7 +131,7 @@ st.title('File Upload to Google Drive')
 uploaded_file = st.file_uploader("Upload a file", type=['jpg', 'png', 'pdf'])  # Accept JPG, PNG, and PDF files
 
 if uploaded_file is not None:
-    st.write('File uploaded successfully!')
+    # st.write('File uploaded successfully!')
 
     # Save the uploaded file to a temporary location
     with open('temp_file', 'wb') as temp_file:
@@ -148,10 +152,19 @@ if uploaded_file is not None:
 
     # Upload the file to Google Drive
     if mime_type:
-        file_id = upload_to_drive('temp_file', uploaded_file.name, mime_type,folder_id="1T3RiNpcYS-vbtSa_AN7z_ZlQbiZtLJfj")
-        st.write(f'File successfully uploaded to Google Drive. File ID: {file_id}')
+        file_id = upload_to_drive('temp_file', uploaded_file.name, mime_type,FOLDER_ID)
+        st.write(f'File uploaded successfully ')
+        link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
+        # st.markdown(f"[Link](https://drive.google.com/file/d/{file_id}/view?usp=sharing)")
+        if st.button("Submit"):
+            if name and email and events:
+                append_to_google_sheet(name, email, events,link)
+            else:
+                st.warning("Please fill in all fields.")
+
     else:
         st.write('File type not supported. Please upload JPG, PNG, or PDF files.')
+
 
 # if st.button("Go to Example Website"):
 #     # st.write(f'<script>window.location.href="https://www.premierleague.com/";</script>', unsafe_allow_html=True)
@@ -159,8 +172,4 @@ if uploaded_file is not None:
 
 
 
-if st.button("Submit"):
-    if name and email:
-        append_to_google_sheet(name, email)
-    else:
-        st.warning("Please fill in both fields.")
+
