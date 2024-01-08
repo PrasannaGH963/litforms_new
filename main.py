@@ -27,7 +27,7 @@ CREDENTIALS_FILE = 'litforms.json'  # Replace with your credentials file path
 def file_exists(service, file_name):
     results = service.files().list(q=f"name='{file_name}'").execute()
     items = results.get('files', [])
-    return len(items) > 0
+    return len(items) > 1
 def upload_to_drive(file_path, file_name, mime_type,folder_id):
     # Load credentials from the credentials file
 
@@ -170,7 +170,7 @@ if uploaded_file is not None:
         # st.markdown(f"[Link](https://drive.google.com/file/d/{file_id}/view?usp=sharing)")
         if file_id != "extra":
             if st.button("Submit"):
-                if name and email and events:
+                if name and email and events and link:
                     append_to_google_sheet(name, email, events,link)
                 else:
                     st.warning("Please fill in all fields.")
