@@ -1,0 +1,16 @@
+{
+    "params":
+        {
+            "CREDS_FILE": "litforms.json",
+            "FOLDER_ID":"",
+            "RESPONSE_SHEET_ID":"",
+            "SHEET_NAME": "",
+            "UPI_ID" : "",
+            "pn": "",
+            "tn":"Registration ID - ",
+            "events":
+            {
+              "Event Name": "Price<int>"
+          }
+        }
+}
