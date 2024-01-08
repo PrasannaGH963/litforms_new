@@ -5,35 +5,38 @@ from oauth2client.service_account import ServiceAccountCredentials
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-import json
-
-
-with open("config.json", "r") as file:
-    parameters = json.load(file)['params']
-
-FOLDER_ID= parameters['FOLDER_ID']
-
+FOLDER_ID="1T3RiNpcYS-vbtSa_AN7z_ZlQbiZtLJfj"
 
 # Function to write data to Google Sheet
 def append_to_google_sheet(name, email,events,link):
-    scope = ['https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/drive.metadata'
-  ]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(parameters['CREDS_FILE'], scope)
+
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_name("litforms.json", scope)
     client = gspread.authorize(creds)
 
     # Replace 'Sheet Name' with your actual+ sheet name
-    sheet = client.open_by_key(parameters['G_SHEET_ID']).worksheet(parameters['SHEET_NAME'])
+    sheet = client.open_by_key("1VeWt6NBUGqc_4TldxqFfrw9qWhd_4n_FKM0H0XEvoLw").worksheet("Sheet1")
     sheet.append_row([name, email,events,link])
     st.success("Event Registration completed successfully!")
 
+# Path to your credentials JSON file
+CREDENTIALS_FILE = 'litforms.json'  # Replace with your credentials file path
+
+
 # Function to upload file to Google Drive
+def file_exists(service, file_name):
+    results = service.files().list(q=f"name='{file_name}'").execute()
+    items = results.get('files', [])
+    return len(items) > 1
 def upload_to_drive(file_path, file_name, mime_type,folder_id):
     # Load credentials from the credentials file
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(parameters['CREDS_FILE'], scope)
+
+    scope = ['https://www.googleapis.com/auth/drive.file',
+             'https://www.googleapis.com/auth/drive',
+             'https://www.googleapis.com/auth/drive.file',
+             'https://www.googleapis.com/auth/drive.metadata'
+             ]
+    creds = ServiceAccountCredentials.from_json_keyfile_name("litforms.json", scope)
 
     # Authorize the API client
     service = build('drive', 'v3', credentials=creds)
@@ -46,12 +49,17 @@ def upload_to_drive(file_path, file_name, mime_type,folder_id):
         "parents": [folder_id]
 
     }
-    media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
+    media = MediaFileUpload(file_path, mimetype=mime_type)
 
     # Upload the file to Drive
-    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+    if not file_exists(service,file_name):
+        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        st.write(f'File uploaded successfully')
+        return file.get('id')
+    else:
+        st.warning('A document with this name already exists!')
+        return "extra"
 
-    return file.get('id')
         # The ID represents a folder
       # The ID does not represent a folder
     # except HttpError as e:
@@ -71,6 +79,18 @@ name = st.text_input("Enter your name")
 email = st.text_input("Enter your email")
 # uploaded_file = st.file_uploader("Choose a file")
 
+costs = {
+    'Innovatia': 10,
+    'DPL': 20,
+    'Code of Lies': 30,
+    'Ctrl-Alt-Elite': 40,
+    'MUN' : 50,
+    'Brainiac': 60,
+    'Gamestorm': 70,
+    'Treasure Trove': 80,
+    'PromptAI': 90,
+    '11hr Hackathon': 100
+}
 
 # Empty dictionary to store the selected checkboxes and their costs
 selected_items = {}
@@ -79,7 +99,7 @@ selected_items = {}
 st.title("Events in ACUNETIX 11.0")
 
 # Iterate through the dictionary to create checkboxes
-for label, cost in parameters['events'].items():
+for label, cost in costs.items():
     checkbox_state = st.checkbox(label)
     if checkbox_state:
         selected_items[label] = cost
@@ -89,10 +109,7 @@ total_cost = sum(selected_items.values())
 events = ",".join(list(selected_items.keys()))
 # Display the total cost
 # st.write(f"Total Cost: {total_cost}")
-
-Rid = "AAAA0000"                                      #TODO:Fetch Ids from google sheet
-
-redirect_url = f"upi://pay?pa={parameters['UPI_ID']}&pn={parameters['pn']}&cu=INR&am={total_cost}&tn={parameters['tn']+str(Rid)}"
+redirect_url = f"upi://pay?pa=pranavmehe14@okicici&pn=Pranav&cu=INR&am={total_cost}"
 # Create the button-like link with specified styles
 button_styles = """
     <style>
@@ -148,14 +165,15 @@ if uploaded_file is not None:
     # Upload the file to Google Drive
     if mime_type:
         file_id = upload_to_drive('temp_file', uploaded_file.name, mime_type,FOLDER_ID)
-        st.write(f'File uploaded successfully ')
+
         link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
         # st.markdown(f"[Link](https://drive.google.com/file/d/{file_id}/view?usp=sharing)")
-        if st.button("Submit"):
-            if name and email and events:
-                append_to_google_sheet(name, email, events,link)
-            else:
-                st.warning("Please fill in all fields.")
+        if file_id != "extra":
+            if st.button("Submit"):
+                if name and email and events and link:
+                    append_to_google_sheet(name, email, events,link)
+                else:
+                    st.warning("Please fill in all fields.")
 
     else:
         st.write('File type not supported. Please upload JPG, PNG, or PDF files.')
