@@ -31,7 +31,9 @@ if search_id:
     cell = sheet.find(search_id)
     if cell:
         # Get the corresponding events for the found ID
-        events_str = sheet.cell(cell.row, cell.col + 1).value
+        name_str = sheet.cell(cell.row, cell.col - 9).value
+        st.write(f"Hallo, {name_str} 👋!")
+        events_str = sheet.cell(cell.row, cell.col - 2).value
         events_list = events_str.split(',') if events_str else []
 
         st.write(f"Events for ID {search_id}:")
