@@ -7,16 +7,20 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 FOLDER_ID = "1T3RiNpcYS-vbtSa_AN7z_ZlQbiZtLJfj"
-<<<<<<< HEAD
+
+#function to add header image
+def add_image_header(image_path):
+    with open(image_path, "rb") as image_file:
+        image_data = image_file.read()
+        st.image(image_data)
+
+add_image_header("headerbgps.png")
+
+
 
 # Function to write data to Google Sheet
-=======
 
 
-# Function to write data to Google Sheet
-
-
->>>>>>> 128bacf699fb533d4c472ff34ef28e45a20a98dd
 def append_to_google_sheet(name, email, college, year, department, contact_no, alternate_contact_no, events, link):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name("litforms.json", scope)
@@ -38,10 +42,7 @@ def file_exists(service, file_name):
     items = results.get('files', [])
     return len(items) > 1
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 128bacf699fb533d4c472ff34ef28e45a20a98dd
 def upload_to_drive(file_path, file_name, mime_type, folder_id):
     scope = ['https://www.googleapis.com/auth/drive.file',
              'https://www.googleapis.com/auth/drive',
@@ -68,10 +69,7 @@ def upload_to_drive(file_path, file_name, mime_type, folder_id):
         st.warning('A document with this name already exists!')
         return "extra"
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 128bacf699fb533d4c472ff34ef28e45a20a98dd
 # Streamlit app
 st.title("ACUNETIX 11.0 Registration")
 
@@ -85,16 +83,6 @@ college = st.selectbox("Select your college", college_option)
 
 # If 'Other' is selected, display additional text input
 if college == "Other":
-<<<<<<< HEAD
-    other_college = st.text_input("Enter your college name (if other)")
-
-year_options = ["FE", "SE", "TE", "BE"]
-year = st.selectbox("Select your year", year_options)
-department_options = ["Computer","Electrical","Artificial Intelligence & Data Science"," Automation & Robotics"," Civil"," Mechanical" ,"Electronics & Telecommunication ","Information Technology ","Instrumentation "]
-department = st.selectbox("Enter your department",department_options)
-contact_no = st.text_input("Enter your contact number",max_chars=10)
-alternate_contact_no = st.text_input("Enter your alternate contact number",max_chars=10)
-=======
     college = st.text_input("Enter your college name (if other)")
 
 year_options = ["FE", "SE", "TE", "BE"]
@@ -103,9 +91,8 @@ department_options = ['Artificial Intelligence & Data Science', 'Automation & Ro
                       'Electronics & Telecommunication', 'Information Technology', 'Instrumentation', 'Mechanical']
 
 department = st.selectbox("Enter your department", department_options,placeholder="Enter your Branch")
-contact_no = st.text_input("Enter your contact number", max_chars=10)
+contact_no = st.text_input("Enter your contact number", max_chars=10, min_char=10)
 alternate_contact_no = st.text_input("Enter your alternate contact number", max_chars=10)
->>>>>>> 128bacf699fb533d4c472ff34ef28e45a20a98dd
 
 # Checkbox for events
 st.title("Events in ACUNETIX 11.0")
@@ -159,11 +146,7 @@ redirect_url = f"upi://pay?pa=pranavmehe14@okicici&pn=Pranav&cu=INR&am={total_co
 #     button_styles +
 #     f'<a href="{redirect_url}" class="custom-link" target="_blank">Payment</a>'
 # )
-<<<<<<< HEAD
-st.button("Payment",redirect_url)
-=======
 st.link_button("Payment", redirect_url)
->>>>>>> 128bacf699fb533d4c472ff34ef28e45a20a98dd
 # File upload section
 st.title('File Upload to Google Drive')
 uploaded_file = st.file_uploader("Upload a file", type=['jpg', 'png', 'pdf'])
@@ -186,17 +169,11 @@ if uploaded_file is not None:
 
         if file_id != "extra":
             if st.button("Submit"):
-<<<<<<< HEAD
-                if name and email and  (college != "Other" or other_college) and year and department and contact_no and alternate_contact_no and events and link:
-                    college_name = college if college != "Other" else other_college
-                    append_to_google_sheet(name, email, college_name, year, department, contact_no, alternate_contact_no, events, link)
-=======
                 if name and email and college and year and department and contact_no and alternate_contact_no \
                         and events and link:
                     # college_name = college if college != "Other" else other_college
                     append_to_google_sheet(name, email, college, year, department, contact_no,
                                            alternate_contact_no, events, link)
->>>>>>> 128bacf699fb533d4c472ff34ef28e45a20a98dd
                 else:
                     st.warning("Please fill in all fields.")
     else:
