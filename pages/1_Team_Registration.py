@@ -8,6 +8,7 @@ from googleapiclient.http import MediaFileUpload
 import pandas as pd
 from gspread_dataframe import set_with_dataframe
 FOLDER_ID="1T3RiNpcYS-vbtSa_AN7z_ZlQbiZtLJfj"
+from main import validate
 
 # Function to write data to Google Sheet
 
@@ -52,8 +53,8 @@ if search_id:
             if num_teammates > 0:
                 teammates_info = []
                 for i in range(num_teammates):
-                    teammate_name = st.text_input(f"Teammate {i + 1} Name for Event {event}:")
-                    teammate_number = st.text_input(f"Teammate {i + 1} Number for Event {event}:")
+                    teammate_name = validate(st.text_input(f"Teammate {i + 1} Name for Event {event}:"),"name")
+                    teammate_number = st.text_input(f"Teammate {i + 1} Number for Event {event}:", max_chars=10)
                     teammate_email = st.text_input(f"Teammate {i + 1} Email for Event {event}:")
                     teammates_info.append({
                         'Name': teammate_name,

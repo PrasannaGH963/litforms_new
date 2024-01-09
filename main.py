@@ -1,10 +1,11 @@
 import streamlit as st
 import gspread
-from googleapiclient.errors import HttpError
+# from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+import re
 
 FOLDER_ID = "1T3RiNpcYS-vbtSa_AN7z_ZlQbiZtLJfj"
 
@@ -19,6 +20,30 @@ add_image_header("headerbgps.png")
 
 
 # Function to write data to Google Sheet
+def validate(text,type):
+    if type == "num":
+        length = len(text)
+        if len(text) == length:
+            return text
+        elif len(text) > length:
+            return text[:length]  # Truncate input to the first 10 characters
+        else:
+            st.error(f"Field should have a length of {length} characters")
+
+    if type == "name":
+        pattern = r'^[a-z]*(?: [a-z]*){0,2}$'
+        test = bool(re.match(pattern, text))
+        if test:
+            return text
+        else:
+            st.error("Invalid Name")
+
+    if type == "email":
+        email_test = bool(re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,}|edu\.in)$', text))
+        if email_test:
+            return text
+        else:
+            st.error("Invalid Email")
 
 
 def append_to_google_sheet(name, email, college, year, department, contact_no, alternate_contact_no, events, link):
@@ -74,8 +99,8 @@ def upload_to_drive(file_path, file_name, mime_type, folder_id):
 st.title("ACUNETIX 11.0 Registration")
 
 # User input fields
-name = st.text_input("Enter your name")
-email = st.text_input("Enter your email")
+name = validate(st.text_input("Enter your name"),"name")
+email = st.text_input("Enter your email","email")
 
 # College selection
 college_option = ["Dr. D. Y. Patil Institute Of Technology", "Other"]
@@ -91,8 +116,8 @@ department_options = ['Artificial Intelligence & Data Science', 'Automation & Ro
                       'Electronics & Telecommunication', 'Information Technology', 'Instrumentation', 'Mechanical']
 
 department = st.selectbox("Enter your department", department_options,placeholder="Enter your Branch")
-contact_no = st.text_input("Enter your contact number", max_chars=10, min_char=10)
-alternate_contact_no = st.text_input("Enter your alternate contact number", max_chars=10)
+contact_no = validate(st.text_input("Enter your contact number", max_chars=10),"num")
+alternate_contact_no = validate(st.text_input("Enter your alternate contact number", max_chars=10), "num")
 
 # Checkbox for events
 st.title("Events in ACUNETIX 11.0")
