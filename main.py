@@ -20,15 +20,17 @@ add_image_header("headerbgps.png")
 
 
 # Function to write data to Google Sheet
-def validate(text,type):
+def validate(text, type, constraints={}):
     if type == "num":
-        length = len(text)
+        length = constraints.get("length", 10)
         if len(text) == length:
             return text
+        elif 0 < len(text) < length:
+            st.warning(f"Field should have a length of {length} characters")
         elif len(text) > length:
-            return text[:length]  # Truncate input to the first 10 characters
-        else:
-            st.error(f"Field should have a length of {length} characters")
+            return text[:length] # Truncate input to the first 10 characters
+    else:
+        return()    
 
     if type == "name":
         pattern = r'^[a-z]*(?: [a-z]*){0,2}$'
@@ -39,7 +41,8 @@ def validate(text,type):
             st.error("Invalid Name")
 
     if type == "email":
-        email_test = bool(re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,}|edu\.in)$', text))
+        epattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,}|edu\.in)$'
+        email_test = bool(re.match(epattern, text))
         if email_test:
             return text
         else:
@@ -100,7 +103,7 @@ st.title("ACUNETIX 11.0 Registration")
 
 # User input fields
 name = validate(st.text_input("Enter your name"),"name")
-email = st.text_input("Enter your email","email")
+email = validate(st.text_input("Enter your email"),"email")
 
 # College selection
 college_option = ["Dr. D. Y. Patil Institute Of Technology", "Other"]
@@ -110,14 +113,21 @@ college = st.selectbox("Select your college", college_option)
 if college == "Other":
     college = st.text_input("Enter your college name (if other)")
 
-year_options = ["FE", "SE", "TE", "BE"]
-year = st.selectbox("Select your year", year_options,placeholder="Enter your year")
-department_options = ['Artificial Intelligence & Data Science', 'Automation & Robotics', 'Civil', 'Computer', 'Electrical',
-                      'Electronics & Telecommunication', 'Information Technology', 'Instrumentation', 'Mechanical']
+year_options = ["Select Year","FE", "SE", "TE", "BE","Other"]
+year = st.selectbox("Select your year", year_options,index=0)
 
-department = st.selectbox("Enter your department", department_options,placeholder="Enter your Branch")
+if year== "Other":
+    year = st.text_input("Enter your Year (if other)")
+        
+department_options = ['Artificial Intelligence & Data Science', 'Automation & Robotics', 'Civil', 'Computer', 'Electrical',
+                      'Electronics & Telecommunication', 'Information Technology', 'Instrumentation', 'Mechanical','Other']
+
+department = st.selectbox("Enter your department", department_options,index=0)
+
+if department== "Other":
+    department = st.text_input("Enter your dep (if other)")
 contact_no = validate(st.text_input("Enter your contact number", max_chars=10),"num")
-alternate_contact_no = validate(st.text_input("Enter your alternate contact number", max_chars=10), "num")
+alternate_contact_no =(st.text_input("Enter your alternate contact number", max_chars=10), "num")
 
 # Checkbox for events
 st.title("Events in ACUNETIX 11.0")
@@ -145,7 +155,7 @@ events = ",".join(list(selected_items.keys()))
 
 # Display the total cost and payment button
 st.write(f"Total Cost: {total_cost}")
-redirect_url = f"upi://pay?pa=pranavmehe14@okicici&pn=Pranav&cu=INR&am={total_cost}"
+redirect_url = f"upi://pay?pa=prasannabadgujar963@oksbi&pn=Pranav&cu=INR&am={total_cost}&tn=payment"
 
 # button_styles = """
 #     <style>
